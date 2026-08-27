@@ -7,11 +7,11 @@ JOIN Products p ON oi.ProductId = p.ProductId
 WHERE o.CustomerId = 1;
 
 -- Query 2: Find the total sales for each product
-SELECT p.ProductID, p.ProductName, SUM(oi.Quantity * oi.Price) AS TotalSales
+SELECT p.ProductId, p.ProductName, SUM(oi.Quantity * oi.Price) AS TotalSales
 FROM OrderItems oi
 JOIN Products p 
-ON oi.ProductID = p.ProductID
-GROUP BY p.ProductID, p.ProductName
+ON oi.ProductId= p.ProductId
+GROUP BY p.ProductId, p.ProductName
 ORDER BY TotalSales DESC;
 
 -- Query 3: Calculate the average order value
@@ -93,7 +93,7 @@ SELECT p.ProductID, p.ProductName, SUM(oi.Quantity) AS TotalQuantitySold
 FROM OrderItems oi JOIN Products p
 ON oi.ProductID = p.ProductID
 GROUP BY p.ProductID, p.ProductName
-ORDER BY p.ProductName;
+ORDER BY p.ProductId;
 
 -- Query 13: Calculate the total revenue generated from each category
 SELECT c.CategoryID, c.CategoryName, SUM(oi.Quantity * oi.Price) AS TotalRevenue
@@ -105,13 +105,22 @@ GROUP BY c.CategoryID, c.CategoryName
 ORDER BY TotalRevenue DESC;
 
 -- Query 14: Find the highest-priced product in each category
-SELECT c.CategoryID, c.CategoryName, p1.ProductID, p1.ProductName, p1.Price
-FROM Categories c JOIN Products p1
-ON c.CategoryID = p1.CategoryID
-WHERE p1.Price = (SELECT Max(Price) FROM Products p2 WHERE p2.CategoryID = p1.CategoryID)
-ORDER BY p1.Price DESC;
+SELECT
+    c.CategoryID,
+    c.CategoryName,
+    p.ProductName,
+    p.Price AS HighestPrice
+FROM Categories c
+JOIN Products p
+    ON c.CategoryID = p.CategoryID
+WHERE p.Price = (
+    SELECT MAX(p2.Price)
+    FROM Products p2
+    WHERE p2.CategoryID = p.CategoryID
+)
+ORDER BY HighestPrice DESC;
 
--- Query 15: Retrieve orders with a total amount greater than a specific value (e.g., $500)
+-- Query 15: Retrieve orders with a total amount greater than a specific value 
 SELECT o.OrderID, c.CustomerID, c.FirstName, c.LastName, o.TotalAmount
 FROM Orders o JOIN Customers c
 ON o.CustomerID = c.CustomerID
@@ -144,7 +153,7 @@ ON c.CustomerID = o.CustomerID
 GROUP BY c.CustomerID, c.FirstName, c.LastName;
 
 
--- Query 20: List orders with more than a specified number of items (e.g., 5 items)
+-- Query 20: List orders with more than a specified number of items 
 SELECT o.OrderID, c.CustomerID, c.FirstName, c.LastName, COUNT(oi.OrderItemID) AS NumberOfItems
 FROM Orders o JOIN OrderItems oi
 ON o.OrderID = oi.OrderID
